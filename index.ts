@@ -2290,18 +2290,6 @@ export default function powerlineFooter(pi: ExtensionAPI) {
     return matchesStashShortcutInput(data, { includePrintableSharpS: config.stashSharpSShortcut });
   }
 
-  // [local patch] Pi's selectors own ctrl+s (save model/thinking default, session sort), so only
-  // claim it while a text editor has focus. Selectors extend Container and have no setText.
-  function isEditorCtrlSStashInput(data: string): boolean {
-    if (!matchesCtrlSStashInput(data)) return false;
-    const focused = tuiRef?.getFocusedComponent?.() as { setText?: unknown } | null;
-    return typeof focused?.setText === "function";
-  }
-
-  function isStashToggleInput(data: string): boolean {
-    return isStashShortcutInput(data) || isEditorCtrlSStashInput(data);
-  }
-
   function isPromptHistoryShortcutInput(data: string): boolean {
     return matchesConfiguredShortcut(data, resolvedShortcuts.stashHistory)
       || (resolvedShortcuts.stashHistory === "ctrl+alt+h" && (
@@ -3182,7 +3170,7 @@ export default function powerlineFooter(pi: ExtensionAPI) {
         if (!enabled || !ctx.hasUI || tuiRef?.hasOverlay?.()) {
           return undefined;
         }
-        if (isStashToggleInput(data)) {
+        if (isStashShortcutInput(data)) {
           stashOrRestoreEditorText(ctx);
           dismissWelcomeForInput(ctx);
           tuiRef?.requestRender();
@@ -3366,7 +3354,9 @@ export default function powerlineFooter(pi: ExtensionAPI) {
           return;
         }
 
-        if (isStashToggleInput(data)) {
+        // Ctrl+S is handled only here, where the editor has focus: Pi's
+        // selectors use it to save defaults and toggle session sort.
+        if (isStashShortcutInput(data) || matchesCtrlSStashInput(data)) {
           stashOrRestoreEditorText(ctx);
           return;
         }
