@@ -48,6 +48,11 @@ export function matchesConfiguredShortcut(data: string, shortcut: string | null 
   return matchesKey(data, shortcut as KeyId);
 }
 
+// [local patch] ctrl+s as a second stash trigger (see index.ts isEditorCtrlSStashInput).
+export function matchesCtrlSStashInput(data: string): boolean {
+  return !isKeyRelease(data) && matchesKey(data, "ctrl+s");
+}
+
 export function matchesStashShortcutInput(data: string, options: { includePrintableSharpS?: boolean } = {}): boolean {
   if (isKeyRelease(data)) return false;
 
